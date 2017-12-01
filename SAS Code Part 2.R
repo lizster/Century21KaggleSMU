@@ -47,3 +47,9 @@ run;*/
 /*Around the 14:00 mark of our video for 14.9 Dr. Magee talks about validating the data with another data set.
 We should follow this
 Train is used to build the model and test is used to test the model*/
+
+/*Cross validate
+proc glmselect data = DATASET USED TO BUILD MODEL;
+model logSales = VARIABLES / selection=Forward (stop=CV) cvmethod=random(5) stats=adjrsq;
+run;
+Re-run with backward and stepwise*/
