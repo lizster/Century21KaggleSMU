@@ -47,25 +47,6 @@ model logSales = logLiv Neighborhood / solution;
 run;
 
 
-
-/*Random Sample*/
-proc surveyselect data=train 
-samprate=0.80 out=Sample 
-outallmethod=srs;
-run;
-
-data Sample1;
-set Sample;
-where selected=1;
-run;
-
-data Sample2;
-set Sample;
-where selected=0;
-run;
-
-
-
 /*Confidence Intervals*/
 
 /*create dataset of just neighborhoods NAmes, Edwards, & BrkSide; log values*/
