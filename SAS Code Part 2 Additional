@@ -34,3 +34,30 @@ run;
 proc reg data=Sample1 plots=all;
 model logSalePrice = logGrLivArea logTotalBsmtSF EnclosedPorch GarageArea OpenPorchSF BsmtFinSFTwo ThirdSsnPorch GarageYrBlt MiscVal BsmtUnfSF / VIF;
 run;
+
+/*step*/
+proc glmselect data=Sample1 plots=all;
+class MSZoning Street Alley LotShape LandContour Utilities LotConfig LandSlope Neighborhood ConditionOne ConditionTwo BldgType HouseStyle RoofStyle RoofMatl ExteriorFirst ExteriorSecond MasVnrType ExterQual ExterCond Foundation BsmtQual BsmtCond BsmtExposure BsmtFinTypeOne BsmtFinTypeTwo Heating HeatingQC CentralAir Electrical KitchenQual Functional FireplaceQu GarageType GarageFinish GarageQual GarageCond PavedDrive PoolQC Fence MiscFeature SaleType SaleCondition;
+model SalePrice = MSSubClass LotFrontage LotArea OverallQual OverallCond YearBuilt YearRemodAdd MasVnrArea BsmtFinSFOne BsmtFinSFTwo BsmtUnfSF TotalBsmtSF FirstFlrSF SecondFlrSF LowQualFinSF GrLivArea BsmtFullBath BsmtHalfBath FullBath HalfBath BedroomAbvGr KitchenAbvGr TotRmsAbvGrd Fireplaces GarageYrBlt GarageCars GarageArea WoodDeckSF OpenPorchSF EnclosedPorch ThirdSsnPorch ScreenPorch PoolArea MiscVal MoSold YrSold / selection=Stepwise(stop=CV) cvmethod=random(5) stats=adjrsq;
+run;
+
+/*creates scatterplot matrix*/
+proc sgscatter data=Sample1;
+matrix logSalePrice OverallQual logGrLivArea GarageCars logBsmtFinSFOne MSSubClass YearRemodAdd MasVnrArea KitchenAbvGr BsmtFullBath;
+run;
+
+/*overall plots & VIF*/
+proc reg data=Sample1 plots=all;
+model logSalePrice = OverallQual logGrLivArea GarageCars logBsmtFinSFOne MSSubClass YearRemodAdd MasVnrArea KitchenAbvGr BsmtFullBath / VIF;
+run;
+
+/*custom*/
+/*creates scatterplot matrix*/
+proc sgscatter data=Sample1;
+matrix logSalePrice OverallQual BedroomABVGr logGrLivArea GarageCars logBsmtFinSFOne /*MSSubClass*/ YearRemodAdd MasVnrArea KitchenAbvGr BsmtFullBath;
+run;
+
+/*overall plots & VIF*/
+proc reg data=Sample1 plots=all;
+model logSalePrice = OverallQual BedroomABVGr FullBath logGrLivArea GarageCars logBsmtFinSFOne /*MSSubClass*/ YearRemodAdd MasVnrArea KitchenAbvGr BsmtFullBath / VIF;
+run;
