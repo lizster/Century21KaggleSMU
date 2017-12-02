@@ -1,0 +1,91 @@
+data test;
+set test;
+SalePrice = .;
+run;
+
+/*View first 20 observations of Train dataset to ensure loaded properly*/
+/*An extra column called VAR1 was added by R. It will be removed later*/
+proc print data=Train (firstobs=1 obs=20);
+run;
+/*Convert LotFrontage from character to numerical and rename to LotFrontage*/
+/*Dropping VAR1, which was added by R*/
+data Train2;
+set Train test;
+LotFrontageNum = input(LotFrontage, 8.);
+drop LotFrontage;
+rename LotFrontageNum=LotFrontage;
+drop VAR1;
+run;
+/*Check LotFrontage to ensure stored as numeric. Will appear to far right*/
+proc contents data=Train;
+run;
+
+data train2;
+set train2;
+logsaleprice = log(saleprice);
+logBSMTFinSF1 = log(BSMTFinSF1);
+logTotalBSMTSF = log(TotalBSMTSF);
+logGrLivArea = log(GrLivArea);
+run;
+
+data train2;
+set train2;
+if BSMTFinSFOne > 5600 then delete;
+if GrLivArea > 4000 then delete;
+if MiscVal > 8000 then delete;
+run;
+
+proc contents data= train;
+run;
+proc contents data = test;
+run;
+
+/*Forward Selection*/
+proc glmselect data=train2 plots=all;
+class MSZoning Street Alley LotShape LandContour Utilities LotConfig LandSlope Neighborhood Condition1 Condition2 BldgType HouseStyle RoofStyle RoofMatl Exterior1st Exterior2nd MasVnrType ExterQual ExterCond Foundation BsmtQual BsmtCond BsmtExposure BsmtFinType1 BsmtFinType2 Heating HeatingQC CentralAir Electrical KitchenQual Functional FireplaceQu GarageType GarageFinish GarageQual GarageCond PavedDrive PoolQC Fence MiscFeature SaleType SaleCondition;
+model SalePrice = MSSubClass LotFrontage LotArea OverallQual OverallCond YearBuilt YearRemodAdd MasVnrArea BsmtFinSF1 BsmtFinSF2 BsmtUnfSF TotalBsmtSF FirstFlrSF SecondFlrSF LowQualFinSF GrLivArea BsmtFullBath BsmtHalfBath FullBath HalfBath BedroomAbvGr KitchenAbvGr TotRmsAbvGrd Fireplaces GarageYrBlt GarageCars GarageArea WoodDeckSF OpenPorchSF EnclosedPorch ThirdSsnPorch ScreenPorch PoolArea MiscVal MoSold YrSold / selection=Forward(stop=CV) cvmethod=random(5) stats=adjrsq;
+output out = results2 p=predict;
+run;
+
+/*Backward Selection*/
+proc glmselect data=train2 plots=all;
+class MSZoning Street Alley LotShape LandContour Utilities LotConfig LandSlope Neighborhood Condition1 Condition2 BldgType HouseStyle RoofStyle RoofMatl Exterior1st Exterior2nd MasVnrType ExterQual ExterCond Foundation BsmtQual BsmtCond BsmtExposure BsmtFinType1 BsmtFinType2 Heating HeatingQC CentralAir Electrical KitchenQual Functional FireplaceQu GarageType GarageFinish GarageQual GarageCond PavedDrive PoolQC Fence MiscFeature SaleType SaleCondition;
+model SalePrice = MSSubClass LotFrontage LotArea OverallQual OverallCond YearBuilt YearRemodAdd MasVnrArea BsmtFinSF1 BsmtFinSF2 BsmtUnfSF TotalBsmtSF FirstFlrSF SecondFlrSF LowQualFinSF GrLivArea BsmtFullBath BsmtHalfBath FullBath HalfBath BedroomAbvGr KitchenAbvGr TotRmsAbvGrd Fireplaces GarageYrBlt GarageCars GarageArea WoodDeckSF OpenPorchSF EnclosedPorch ThirdSsnPorch ScreenPorch PoolArea MiscVal MoSold YrSold / selection=Backward(stop=CV) cvmethod=random(5) stats=adjrsq;
+output out = results2 p=predict;
+run;
+
+/*Stepwise*/
+proc glmselect data=train2 plots=all;
+class MSZoning Street Alley LotShape LandContour Utilities LotConfig LandSlope Neighborhood Condition1 Condition2 BldgType HouseStyle RoofStyle RoofMatl Exterior1st Exterior2nd MasVnrType ExterQual ExterCond Foundation BsmtQual BsmtCond BsmtExposure BsmtFinType1 BsmtFinType2 Heating HeatingQC CentralAir Electrical KitchenQual Functional FireplaceQu GarageType GarageFinish GarageQual GarageCond PavedDrive PoolQC Fence MiscFeature SaleType SaleCondition;
+model SalePrice = MSSubClass LotFrontage LotArea OverallQual OverallCond YearBuilt YearRemodAdd MasVnrArea BsmtFinSF1 BsmtFinSF2 BsmtUnfSF TotalBsmtSF FirstFlrSF SecondFlrSF LowQualFinSF GrLivArea BsmtFullBath BsmtHalfBath FullBath HalfBath BedroomAbvGr KitchenAbvGr TotRmsAbvGrd Fireplaces GarageYrBlt GarageCars GarageArea WoodDeckSF OpenPorchSF EnclosedPorch ThirdSsnPorch ScreenPorch PoolArea MiscVal MoSold YrSold / selection=Stepwise(stop=CV) cvmethod=random(5) stats=adjrsq;
+output out = results2 p=predict;
+run;
+
+/*Custom*/
+
+/*Generated a terrible kaggle score (.312) - Results11.csv*/
+/*Removing extreme outliers*/
+proc glm data=train2 plots=all;
+class Neighborhood;
+model logSalePrice = OverallQual logGrLivArea | Neighborhood GarageCars BsmtFinSF1 YearRemodAdd | Neighborhood MasVnrArea | Neighborhood KitchenAbvGr BsmtFullBath / cli solution;
+output out = results2 p=Predict;
+run;
+
+/*Continue Testing*/
+proc glm data=train2 plots=all;
+class Neighborhood;
+model logSalePrice = OverallQual logGrLivArea | Neighborhood GarageCars BsmtFinSF1 YearRemodAdd | Neighborhood MasVnrArea | Neighborhood KitchenAbvGr BsmtFullBath / cli solution;
+output out = results2 p=Predict;
+run;
+
+/*transforming the sales price and changing any negative values*/
+data results3;
+set results2;
+if predict > 0 then SalePrice = exp(Predict);
+if predict < 0 then SalePrice = 10000;
+keep id SalePrice;
+where id > 1460;
+run;
+
+proc export data = results3 outfile = _dataout dbms = csv replace;
+run;
