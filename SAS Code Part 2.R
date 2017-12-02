@@ -53,3 +53,10 @@ proc glmselect data = DATASET USED TO BUILD MODEL;
 model logSales = VARIABLES / selection=Forward (stop=CV) cvmethod=random(5) stats=adjrsq;
 run;
 Re-run with backward and stepwise*/
+
+
+proc glmselect data=Sample1 plots=all;
+class MSZoning Street Alley LotShape LandContour Utilities LotConfig LandSlope Neighborhood ConditionOne ConditionTwo BldgType HouseStyle RoofStyle RoofMatl ExteriorFirst ExteriorSecond MasVnrType ExterQual ExterCond Foundation BsmtQual BsmtCond BsmtExposure BsmtFinTypeOne BsmtFinTypeTwo Heating HeatingQC CentralAir Electrical KitchenQual Functional FireplaceQu GarageType GarageFinish GarageQual GarageCond PavedDrive PoolQC Fence MiscFeature SaleType SaleCondition;
+model SalePrice = MSSubClass LotFrontage LotArea OverallQual OverallCond YearBuilt YearRemodAdd MasVnrArea BsmtFinSFOne BsmtFinSFTwo BsmtUnfSF TotalBsmtSF FirstFlrSF SecondFlrSF LowQualFinSF GrLivArea BsmtFullBath BsmtHalfBath FullBath HalfBath BedroomAbvGr KitchenAbvGr TotRmsAbvGrd Fireplaces GarageYrBlt GarageCars GarageArea WoodDeckSF OpenPorchSF EnclosedPorch ThirdSsnPorch ScreenPorch PoolArea MiscVal MoSold YrSold / selection=Forward(stop=CV) cvmethod=random(5) stats=adjrsq;
+run;
+
