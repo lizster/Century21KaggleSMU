@@ -1,3 +1,27 @@
+data Sample1;
+set Sample;
+where selected=1;
+logsaleprice = log(saleprice);
+/* Forward*/
+/*if BSMTFinSFOne = "5644" then delete;*/
+/*if GrLivArea > 4000 then delete;*/
+logBSMTFinSFOne = log(BSMTFinSFOne);
+/*backward*/
+logTotalBSMTSF = log(TotalBSMTSF);
+logGrLivArea = log(GrLivArea);
+if MiscVal > 8000 then delete;
+run;
+
+data Sample2;
+set Sample;
+where selected=0;
+logsaleprice = log(saleprice);
+logBSMTFinSFOne = log(BSMTFinSFOne);
+/*backward*/
+logTotalBSMTSF = log(TotalBSMTSF);
+logGrLivArea = log(GrLivArea);
+run;
+
 /*forward*/
 proc glmselect data=Sample1 plots=all;
 class MSZoning Street Alley LotShape LandContour Utilities LotConfig LandSlope Neighborhood ConditionOne ConditionTwo BldgType HouseStyle RoofStyle RoofMatl ExteriorFirst ExteriorSecond MasVnrType ExterQual ExterCond Foundation BsmtQual BsmtCond BsmtExposure BsmtFinTypeOne BsmtFinTypeTwo Heating HeatingQC CentralAir Electrical KitchenQual Functional FireplaceQu GarageType GarageFinish GarageQual GarageCond PavedDrive PoolQC Fence MiscFeature SaleType SaleCondition;
